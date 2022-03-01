@@ -1,0 +1,1 @@
+[{"title":"relog","price":49.99,"thumbnail":"www.XD.com","id":1},{"title":"telefono","price":299.99,"thumbnail":"www.XDDDD.com","id":2},{"title":"laptop","price":499.99,"thumbnail":"www.XXXDDDD.com","id":3}]
