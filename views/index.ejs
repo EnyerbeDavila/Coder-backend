@@ -13,45 +13,14 @@
 <body class="bg-secondary bg-gradient">
     <h1>Cliente Websockets</h1>
 
-    <div class="container mt-3">
-      <div class="jumbotron">
-        <h2 style="color: red">Ingrese su Objeto</h2>
-        <br/>
-        <form  onsubmit="return false">
-          <div class="form-group">
-            <label for="nombre"><b>Nombre</b></label>
-            <input id="nombre" class="form-control" type="text" name="nombre" />
-          </div>
-          <div class="form-group">
-            <label for="precio"><b>Precio</b></label>
-            <input id="precio" class="form-control" type="number" name="precio" />
-          </div>
-          <div class="form-group">
-            <label for="urlfoto"><b>Foto del Objeto</b></label>
-            <input id="urlfoto" class="form-control" type="text" name="urlfoto"/>
-          </div>
-          <button onclick="addProduct()" class="btn btn-success mt-3 mb-5">Enviar</button>
-        </form>
-      </div>
-    </div>
-
     <div>
-      <h2>Lista de objetos</h2>
-    <div class="table-responsive">
-        <table  class="table table-dark" id="tabla"></table>
+      <%- include('./partials/formulario.ejs',) %>
     </div>
-      <!-- <%- include('./partials/tabla.ejs', productos) %> -->
+    <div>
+      <%- include('./partials/tabla.ejs',) %>
     </div>
-    
-    <div class="bg-dark bg-gradient text-white">
-      <h1>Chat para Clientes</h1>
-      <div id="mensajes"></div>
-      <form onsubmit="return addMessage(this)">
-        <input class="rounded" type="text" id="email" placeholder="Tu Email" />
-        <input class="rounded" type="text" id="texto" placeholder="Cuéntanos algo..." />
-        <input class="rounded" type="submit" value="Enviar"/>
-      </form> 
-      <br>
+    <div>
+      <%- include('./partials/chat.ejs',) %>
     </div>
 </body>
 
