@@ -1,15 +1,21 @@
 {
-  "name": "ulala",
+  "name": "1",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ejs": "^3.0.2",
     "express": "^4.17.3",
-    "moment": "^2.29.2"
+    "knex": "^0.95.15",
+    "moment": "^2.29.1",
+    "mysql": "^2.18.1",
+    "socket.io": "^4.4.1",
+    "sqlite3": "^5.0.3"
   }
 }

@@ -1,0 +1,21 @@
+<div class="container mt-3">
+  <div class="jumbotron">
+    <h2 style="color: red">Ingrese su Objeto</h2>
+    <br/>
+    <form  onsubmit="return false">
+      <div class="form-group">
+        <label for="nombre"><b>Nombre</b></label>
+        <input id="nombre" class="form-control" type="text" name="nombre" />
+      </div>
+      <div class="form-group">
+        <label for="precio"><b>Precio</b></label>
+        <input id="precio" class="form-control" type="number" name="precio" />
+      </div>
+      <div class="form-group">
+        <label for="urlfoto"><b>Foto del Objeto</b></label>
+        <input id="urlfoto" class="form-control" type="text" name="urlfoto"/>
+      </div>
+      <button onclick="addProduct()" class="btn btn-success mt-3 mb-5">Enviar</button>
+    </form>
+  </div>
+</div>
