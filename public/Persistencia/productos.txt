@@ -1,0 +1,1 @@
+[{"nombre":"olele","descripcion":"olala","precio":"3","urlfoto":"https://ichef.bbci.co.uk/news/640/amz/worldservice/live/assets/images/2011/04/15/110415144733_perro_observador_304x171_bbc_nocredit.jpg","stock":"10unds","id":1,"timestamp":"(27/04/2022-07:18:22pm)","codigo":1651097902113}]
