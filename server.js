@@ -10,6 +10,10 @@ const { Server: HttpServer } = require('http')
 const { Server: IOServer } = require('socket.io')
 const { options } = require('./options/mariaDB')
 const knex = require('knex')(options)
+const connectMongo = require('connect-mongo')
+const session = require('express-session')
+const req = require('express/lib/request')
+const res = require('express/lib/response')
 
 async function CRUD() {
   try {
@@ -32,7 +36,20 @@ const io = new IOServer(httpServer)
 app.use(express.static('public'))
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
+app.use(
+  session({
+    store: connectMongo.create({
+      mongoUrl: 'mongodb+srv://UserName:asd.456@cluster0.qku2u.mongodb.net/sessions?retryWrites=true&w=majority',
+      mongoOptions: { useNewUrlParser: true, useUnifiedTopology: true },
+      ttl: 600
+    }),
+    secret: 'secreto',
+    resave: true,
+    saveUnitialized: true,
 
+  })
+)
+// cookie: { maxAge: 600000 }
 app.set('view engine', 'ejs')
 
 const PORT = 8080
@@ -50,8 +67,38 @@ connectedServer.on('error', error => console.log(`Error en servidor ${error}`))
 //   .then(() => console.log('table creada'))
 //   .catch((err) => console.log(err))
 
-app.get('/', (req, res) => {
-  res.render('index.ejs')
+function auth(req, res, next) {
+  if (req.session?.user === undefined) {
+    res.redirect('http://localhost:8080/login')
+  } else {
+    next()
+  }
+}
+
+app.get('/login', (req, res) => {
+  res.render('formularioLog.ejs')
+})
+
+app.post('/login', (req, res) => {
+  if (req.body.userName == "") {
+    res.send('Ingrese un nombre de usuario')
+  } else {
+    req.session.user = req.body.userName
+    res.redirect('http://localhost:8080')
+  }
+})
+
+app.post('/log-out', (req, res) => {
+  let user = req.session.user
+  req.session.destroy((err) => {
+    if (!err) res.render('Bye.ejs', {user: user})
+    else res.send({ status: 'logout Error', error: err })
+  })
+})
+
+app.get('/', auth, (req, res) => {
+  let user = req.session.user
+  res.render('index.ejs', { nombre: user })
 })
 
 app.get('/api/productos-test', (req, res) => {
@@ -67,8 +114,6 @@ app.get('/api/productos-test', (req, res) => {
 })
 
 io.on('connection', socket => {
-  console.log('Nuevo cliente conectado!')
-
   async function mensaje() {
     let Post = await modelPost.find()
     socket.emit('messages', Post)
@@ -96,7 +141,7 @@ io.on('connection', socket => {
       fecha: fecha
     }], { idAttribute: 'id' })
     const autores = new normalizr.schema.Array(organigrama)
-    
+
     const normalizado = normalizr.normalize(post, autores)
 
     async function send() {
