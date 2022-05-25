@@ -3,6 +3,7 @@ const moment = require("moment")
 const util = require('util')
 const mongoose = require("mongoose")
 const modelPost = require("./models/schemaPost")
+const modelUser = require('./models/schemaUser')
 const { faker } = require('@faker-js/faker')
 faker.locale = 'es'
 const normalizr = require('normalizr')
@@ -12,8 +13,12 @@ const { options } = require('./options/mariaDB')
 const knex = require('knex')(options)
 const connectMongo = require('connect-mongo')
 const session = require('express-session')
-const req = require('express/lib/request')
-const res = require('express/lib/response')
+const passport = require('passport')
+const console = require('console')
+const { JSON } = require('mysql/lib/protocol/constants/types')
+const LocalStrategy = require('passport-local').Strategy
+const bcrypt = require('bcrypt')
+
 
 async function CRUD() {
   try {
@@ -46,11 +51,59 @@ app.use(
     secret: 'secreto',
     resave: true,
     saveUnitialized: true,
-
   })
 )
-// cookie: { maxAge: 600000 }
+app.use(passport.initialize())
+app.use(passport.session())
 app.set('view engine', 'ejs')
+
+passport.use('login', new LocalStrategy((username, password, done) => {
+  let usuario = modelUser.find({ username: username }, function (err, docs) {
+    if (docs.length == 0) {
+      return done(null, false)
+    } else {
+      bcrypt.compare(password, docs[0].password, function (err, result) {
+        if (result == true) {
+          const user = { username: docs[0].username}
+          return done(null, user)
+        } else {
+          return done(null, false)
+        }
+      })
+    }
+  })
+})
+)
+
+passport.use('registro', new LocalStrategy({ passReqToCallback: true }, (req, username, password, done) => {
+  bcrypt.genSalt(10, function (err, salt) {
+    bcrypt.hash(password, salt, function (err, hash) {
+      let usuarioscont = modelUser.find({ username: username }, function (err, docs) {
+        if (docs.length == 0) {
+          async function send() {
+            await new modelUser({ username: username, password: hash }).save()
+            return done(null, { username: username })
+          }
+          send()
+        } else {
+          return done(null, false)
+        }
+      })
+    });
+  });
+}
+))
+
+passport.serializeUser((usuario, done) => {
+  done(null, usuario.username)
+})
+
+passport.deserializeUser((username, done) => {
+  let usuario = modelUser.find({ username: username }, function (err, docs) {
+    const user = { username: docs[0].username, password: docs[0].password }
+    done(null, user)
+  })
+})
 
 const PORT = 8080
 const connectedServer = httpServer.listen(PORT, () => {
@@ -67,39 +120,53 @@ connectedServer.on('error', error => console.log(`Error en servidor ${error}`))
 //   .then(() => console.log('table creada'))
 //   .catch((err) => console.log(err))
 
-function auth(req, res, next) {
-  if (req.session?.user === undefined) {
-    res.redirect('http://localhost:8080/login')
-  } else {
-    next()
-  }
-}
+app.get('/Fallo', (req, res) => {
+  res.render('login-error.ejs')
+})
+
+app.get('/Fallo2', (req, res) => {
+  res.render('Regis-error.ejs')
+})
 
 app.get('/login', (req, res) => {
+  req.logOut()
   res.render('formularioLog.ejs')
 })
 
-app.post('/login', (req, res) => {
-  if (req.body.userName == "") {
-    res.send('Ingrese un nombre de usuario')
-  } else {
-    req.session.user = req.body.userName
-    res.redirect('http://localhost:8080')
-  }
+app.post('/login', passport.authenticate('login',
+  {
+    successRedirect: 'http://localhost:8080',
+    failureRedirect: '/Fallo'
+  })
+)
+
+app.get('/registro', (req, res) => {
+  res.render('formularioRegist.ejs')
 })
+
+app.post('/registro', passport.authenticate('registro',
+  {
+    successRedirect: '/login',
+    failureRedirect: '/Fallo2'
+  })
+)
 
 app.post('/log-out', (req, res) => {
-  let user = req.session.user
-  req.session.destroy((err) => {
-    if (!err) res.render('Bye.ejs', {user: user})
-    else res.send({ status: 'logout Error', error: err })
-  })
+  let user = req.user.username
+  res.render('Bye.ejs', { user: user })
 })
 
-app.get('/', auth, (req, res) => {
-  let user = req.session.user
+app.get('/', (req, res, next) => {
+  if (req.user == undefined) {
+    res.redirect('/login')
+  } else {
+    next()
+  }
+}, (req, res) => {
+  let user = req.user.username
   res.render('index.ejs', { nombre: user })
-})
+}
+)
 
 app.get('/api/productos-test', (req, res) => {
   let productos = []
@@ -147,6 +214,7 @@ io.on('connection', socket => {
     async function send() {
       await new modelPost(normalizado).save()
       let Post = await modelPost.find()
+      console.log(Post)
       io.sockets.emit('messages', Post)
     }
     send()
