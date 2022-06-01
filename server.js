@@ -14,11 +14,12 @@ const knex = require('knex')(options)
 const connectMongo = require('connect-mongo')
 const session = require('express-session')
 const passport = require('passport')
-const console = require('console')
-const { JSON } = require('mysql/lib/protocol/constants/types')
 const LocalStrategy = require('passport-local').Strategy
 const bcrypt = require('bcrypt')
-
+const config = require('./config')
+const parseArgs = require('minimist')
+const { fork } = require('child_process')
+const os = require('os')
 
 async function CRUD() {
   try {
@@ -44,7 +45,7 @@ app.use(express.json())
 app.use(
   session({
     store: connectMongo.create({
-      mongoUrl: 'mongodb+srv://UserName:asd.456@cluster0.qku2u.mongodb.net/sessions?retryWrites=true&w=majority',
+      mongoUrl: `mongodb+srv://${config.User}:${config.password}@cluster0.qku2u.mongodb.net/sessions?retryWrites=true&w=majority`,
       mongoOptions: { useNewUrlParser: true, useUnifiedTopology: true },
       ttl: 600
     }),
@@ -64,7 +65,7 @@ passport.use('login', new LocalStrategy((username, password, done) => {
     } else {
       bcrypt.compare(password, docs[0].password, function (err, result) {
         if (result == true) {
-          const user = { username: docs[0].username}
+          const user = { username: docs[0].username }
           return done(null, user)
         } else {
           return done(null, false)
@@ -105,7 +106,10 @@ passport.deserializeUser((username, done) => {
   })
 })
 
-const PORT = 8080
+const optionsMini = { default: { puerto: '8080' } }
+const args = parseArgs(process.argv, optionsMini)
+
+const PORT = args.puerto
 const connectedServer = httpServer.listen(PORT, () => {
   console.log(`Servidor Http con Websockets escuchando en el puerto ${connectedServer.address().port}`)
 })
@@ -167,6 +171,27 @@ app.get('/', (req, res, next) => {
   res.render('index.ejs', { nombre: user })
 }
 )
+
+app.get('/info', (req, res) =>{
+  let objeto = {
+    ArgumentosDeEntrada: args,
+    SistemaOperativo: os.type(),
+    VersionNodejs: process.version,
+    Rss: process.memoryUsage.rss(),
+    PathEjecucion: process.execPath,
+    PathEjecutable: args._[1]
+  }
+  res.send(objeto)
+})
+
+app.get('/api/randoms', (req, res) => {
+  const forked = fork('./fork.js')
+  let cant = req.query.cant
+  forked.send({ cant: cant })
+  forked.on('message', (numeros) => {
+    res.send(numeros)
+  })
+})
 
 app.get('/api/productos-test', (req, res) => {
   let productos = []
