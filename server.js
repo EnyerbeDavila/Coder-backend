@@ -18,6 +18,8 @@ const config = require('./config')
 const parseArgs = require('minimist')
 const os = require('os')
 const cluster = require('cluster')
+const compression = require('compression')
+const log4js = require('log4js')
 
 const optionsMini = { default: { puerto: '8080', modo: 'FORK' } }
 const args = parseArgs(process.argv, optionsMini)
@@ -36,6 +38,23 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
   })
 } else {
 
+  log4js.configure({
+    appenders: {
+      miLoggerConsole: { type: 'console' },
+      miWarnFile: { type: 'file', filename: 'warn.log' },
+      miErrorFile: { type: 'file', filename: 'error.log' },
+    },
+    categories: {
+      default: { appenders: ['miLoggerConsole'], level: 'all' },
+      loginfo: { appenders: ['miLoggerConsole'], level: 'info' },
+      logwn: { appenders: ['miWarnFile', 'miLoggerConsole'], level: 'warn' },
+      logerr: { appenders: ['miErrorFile', 'miLoggerConsole'], level: 'error' },
+    },
+  })
+
+  const logWarning = log4js.getLogger('logwn')
+  const logError = log4js.getLogger('logerr')
+  const logInfo = log4js.getLogger('loginfo')
 
   async function CRUD() {
     try {
@@ -73,6 +92,7 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
   app.use(passport.initialize())
   app.use(passport.session())
   app.set('view engine', 'ejs')
+
 
   passport.use('login', new LocalStrategy((username, password, done) => {
     let usuario = modelUser.find({ username: username }, function (err, docs) {
@@ -141,18 +161,24 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
   //   .catch((err) => console.log(err))
 
   app.get('/Fallo', (req, res) => {
+    logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
     RenderFallo(res)
   })
 
   app.get('/Fallo2', (req, res) => {
+    logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
     RenderFallo2(res)
   })
 
   app.get('/login', (req, res) => {
+    logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
     login(req, res)
   })
 
-  app.post('/login', passport.authenticate('login',
+  app.post('/login', (req, res, next) => {
+    logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
+    next()
+  }, passport.authenticate('login',
     {
       successRedirect: 'http://localhost:8080',
       failureRedirect: '/Fallo'
@@ -160,10 +186,14 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
   )
 
   app.get('/registro', (req, res) => {
+    logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
     RenderRegis(res)
   })
 
-  app.post('/registro', passport.authenticate('registro',
+  app.post('/registro', (req, res, next) => {
+    logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
+    next()
+  }, passport.authenticate('registro',
     {
       successRedirect: '/login',
       failureRedirect: '/Fallo2'
@@ -171,10 +201,12 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
   )
 
   app.post('/log-out', (req, res) => {
+    logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
     RenderLogout(req, res)
   })
 
   app.get('/', (req, res, next) => {
+    logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
     if (req.user == undefined) {
       res.redirect('/login')
     } else {
@@ -186,17 +218,30 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
   )
 
   app.get('/info', (req, res) => {
+    logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
+    SendInfo(res)
+  })
+
+  app.get('/infozip', compression(), (req, res) => {
+    logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
     SendInfo(res)
   })
 
   app.get('/api/randoms', (req, res) => {
+    logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
     NumberRandoms(req, res)
   })
 
   app.get('/api/productos-test', (req, res) => {
+    logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
     ProductosTest(res)
   })
 
+  app.use((req, res) => {
+    logWarning.warn(`Ruta Inexistente: ${req.path}, Metodo: ${req.method}`)
+    res.send(`Ruta Inexistente: ${req.path}, Metodo: ${req.method}`)
+  })
+  
   io.on('connection', socket => {
     async function mensaje() {
       let Post = await modelPost.find()
