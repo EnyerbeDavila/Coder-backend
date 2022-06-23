@@ -24,7 +24,7 @@ const log4js = require('log4js')
 const optionsMini = { default: { puerto: '8080', modo: 'FORK' } }
 const args = parseArgs(process.argv, optionsMini)
 const modo = args.modo
-const PORT = args.puerto
+const PORT = process.env.PORT 
 
 if (modo == 'CLUSTER' && cluster.isPrimary) {
   const cantNucleos = os.cpus().length
