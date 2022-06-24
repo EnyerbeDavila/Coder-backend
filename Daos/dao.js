@@ -32,6 +32,7 @@ module.exports = {
     SendInfo: (res) => {
         let objeto = {
             ArgumentosDeEntrada: args,
+            PuertoDeEscucha: process.env.PORT,
             SistemaOperativo: os.type(),
             VersionNodejs: process.version,
             Rss: process.memoryUsage.rss(),
