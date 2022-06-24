@@ -26,8 +26,8 @@ module.exports = {
         res.render('Bye.ejs', { user: user })
     },
     RenderPrinc: (req, res) => {
-        let user = req.user.username
-        res.render('index.ejs', { nombre: user })
+        // let user = req.user.username, { nombre: user }
+        res.render('index.ejs')
     },
     SendInfo: (res) => {
         let objeto = {
