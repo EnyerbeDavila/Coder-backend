@@ -24,7 +24,7 @@ const log4js = require('log4js')
 const optionsMini = { default: { puerto: '8080', modo: 'FORK' } }
 const args = parseArgs(process.argv, optionsMini)
 const modo = args.modo
-const PORT = process.env.PORT
+const PORT = process.env.PORT 
 
 if (modo == 'CLUSTER' && cluster.isPrimary) {
   const cantNucleos = os.cpus().length
@@ -205,18 +205,16 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
     RenderLogout(req, res)
   })
 
-  app.get('/',
-    //  (req, res, next) => {
-    // logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
-    // if (req.user == undefined) {
-    //   res.redirect('/login')
-    // } else {
-    //   next()
-    // }
-    // },
-    (req, res) => {
-      RenderPrinc(req, res)
+  app.get('/', (req, res, next) => {
+    logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
+    if (req.user == undefined) {
+      res.redirect('/login')
+    } else {
+      next()
     }
+  }, (req, res) => {
+    RenderPrinc(req, res)
+  }
   )
 
   app.get('/info', (req, res) => {
@@ -243,7 +241,7 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
     logWarning.warn(`Ruta Inexistente: ${req.path}, Metodo: ${req.method}`)
     res.send(`Ruta Inexistente: ${req.path}, Metodo: ${req.method}`)
   })
-
+  
   io.on('connection', socket => {
     async function mensaje() {
       let Post = await modelPost.find()
