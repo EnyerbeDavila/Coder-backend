@@ -21,13 +21,11 @@ module.exports = {
     RenderRegis: (res) => {
         res.render('formularioRegist.ejs')
     },
-    RenderLogout: (req, res) => {
-        let user = req.user.username
-        res.render('Bye.ejs', { user: user })
+    RenderLogout: (req, res, nombre) => {
+        res.render('Bye.ejs', { user: nombre })
     },
-    RenderPrinc: (req, res) => {
-        let user = req.user.username
-        res.render('index.ejs', { nombre: user })
+    RenderPrinc: (req, res, nombre, foto) => {
+        res.render('index.ejs', { nombre: nombre, foto: foto })
     },
     SendInfo: (res) => {
         let objeto = {

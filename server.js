@@ -20,11 +20,13 @@ const os = require('os')
 const cluster = require('cluster')
 const compression = require('compression')
 const log4js = require('log4js')
+const { createTransport } = require('nodemailer')
+const twilio = require('twilio')
 
 const optionsMini = { default: { puerto: '8080', modo: 'FORK' } }
 const args = parseArgs(process.argv, optionsMini)
 const modo = args.modo
-const PORT = process.env.PORT
+const PORT = args.puerto
 
 if (modo == 'CLUSTER' && cluster.isPrimary) {
   const cantNucleos = os.cpus().length
@@ -37,6 +39,8 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
     cluster.fork()
   })
 } else {
+
+  const client = twilio('ACcb494a938044df715fa5655af67bcabd', 'bc86ceb2481af3e52aae12b356653d6a')
 
   log4js.configure({
     appenders: {
@@ -56,10 +60,18 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
   const logError = log4js.getLogger('logerr')
   const logInfo = log4js.getLogger('loginfo')
 
+  const transporter = createTransport({
+    service: 'gmail',
+    port: 587,
+    auth: {
+      user: 'felipegustaamante@gmail.com',
+      pass: 'sczmnnkiqzhemcni'
+    }
+  })
+
   async function CRUD() {
     try {
-      const URL = "mongodb://127.0.0.1:27017/post"
-      let rta = await mongoose.connect(URL, {
+      let rta = await mongoose.connect('mongodb+srv://user3:Asd.123@cluster0.qku2u.mongodb.net/mydata?retryWrites=true&w=majority', {
         useNewUrlParser: true,
         useUnifiedTopology: true
       })
@@ -80,7 +92,7 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
   app.use(
     session({
       store: connectMongo.create({
-        mongoUrl: `mongodb+srv://${config.User}:${config.password}@cluster0.qku2u.mongodb.net/sessions?retryWrites=true&w=majority`,
+        mongoUrl: `mongodb+srv://user2:asd@cluster0.qku2u.mongodb.net/sessions?retryWrites=true&w=majority`,
         mongoOptions: { useNewUrlParser: true, useUnifiedTopology: true },
         ttl: 600
       }),
@@ -118,7 +130,20 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
         let usuarioscont = modelUser.find({ username: username }, function (err, docs) {
           if (docs.length == 0) {
             async function send() {
-              await new modelUser({ username: username, password: hash }).save()
+              let usuario = req.body
+              try {
+                const info = await transporter.sendMail(
+                  {
+                    from: 'Coder-Backend',
+                    to: 'felipegustaamante@gmail.com',
+                    subject: 'Nuevo registro',
+                    html: `Nuevo Registro: nombre: ${usuario.nombre}, email: ${username}, edad: ${usuario.edad}, numero telefonico: ${usuario.NuTelefonico}`
+                  }
+                )
+              } catch (error) {
+                console.log(err)
+              }
+              await new modelUser({ username: username, password: hash, nombre: usuario.nombre, edad: usuario.edad, NuTelefonico: usuario.NuTelefonico, urlAvatar: usuario.UrlAvatar, carrito: [] }).save()
               return done(null, { username: username })
             }
             send()
@@ -182,11 +207,42 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
     // },
     passport.authenticate('login',
       {
-        successRedirect: 'http://localhost:8080',
+        successRedirect: '/',
         failureRedirect: '/Fallo'
       })
   )
-
+  app.get('/informacion-perso', (req, res, next) => {
+    if (req.user == undefined) {
+      res.redirect('/login')
+    } else {
+      next()
+    }
+  }, (req, res) => {
+    let user = req.user.username
+    let usuario = modelUser.find({ username: user }, function (err, docs) {
+      if (err) {
+        console.log(err)
+      } else {
+        res.render('info-usuario.ejs', { username: user, nombre: docs[0].nombre, telefono: docs[0].NuTelefonico, foto: docs[0].urlAvatar, edad: docs[0].edad, correo: docs[0].username })
+      }
+    })
+  })
+  app.get('/products-user', (req, res, next) => {
+    if (req.user == undefined) {
+      res.redirect('/login')
+    } else {
+      next()
+    }
+  }, (req, res) => {
+    let user = req.user.username
+    let usuario = modelUser.find({ username: user }, function (err, docs) {
+      if (err) {
+        console.log(err)
+      } else {
+        res.render('productos.ejs', { username: user, nombre: docs[0].nombre, foto: docs[0].urlAvatar })
+      }
+    })
+  })
   app.get('/registro', (req, res) => {
     // logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
     RenderRegis(res)
@@ -204,7 +260,15 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
 
   app.post('/log-out', (req, res) => {
     // logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
-    RenderLogout(req, res)
+    let user = req.user.username
+    let usuario = modelUser.find({ username: user }, function (err, docs) {
+      if (err) {
+        console.log(err)
+      } else {
+        let nombre = docs[0].nombre
+        RenderLogout(req, res, nombre)
+      }
+    })
   })
 
   app.get('/', (req, res, next) => {
@@ -215,7 +279,16 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
       next()
     }
   }, (req, res) => {
-    RenderPrinc(req, res)
+    let user = req.user.username
+    let usuario = modelUser.find({ username: user }, function (err, docs) {
+      if (err) {
+        console.log(err)
+      } else {
+        let nombre = docs[0].nombre
+        let foto = docs[0].urlAvatar
+        RenderPrinc(req, res, nombre, foto)
+      }
+    })
   }
   )
 
@@ -245,63 +318,151 @@ if (modo == 'CLUSTER' && cluster.isPrimary) {
   })
 
   io.on('connection', socket => {
-    async function mensaje() {
-      let Post = await modelPost.find()
-      socket.emit('messages', Post)
-    }
-    mensaje()
 
-    knex
-      .from('productos')
-      .select('*')
-      .then((productos) => {
-        socket.emit('product', productos)
-      })
-      .catch((err) => {
-        console.log(err)
-      })
 
-    socket.on('new-message', (post) => {
-      post.fecha = moment().format('(DD/MM/YYYY hh:mm:ss a)')
-      const author = new normalizr.schema.Entity('author')
-      const comment = new normalizr.schema.Entity('comment')
-      const fecha = new normalizr.schema.Entity('fecha')
-      const organigrama = new normalizr.schema.Entity('organigrama', [{
-        author: author,
-        text: comment,
-        fecha: fecha
-      }], { idAttribute: 'id' })
-      const autores = new normalizr.schema.Array(organigrama)
-
-      const normalizado = normalizr.normalize(post, autores)
-
-      async function send() {
-        await new modelPost(normalizado).save()
-        let Post = await modelPost.find()
-        console.log(Post)
-        io.sockets.emit('messages', Post)
-      }
-      send()
+    socket.on('BuyCar', (user) => {
+    //   let usuario = modelUser.find({ username: user }, function (err, docs) {
+    //     if (err) {
+    //       console.log(err)
+    //     } else {
+    //       try {
+    //         const info = transporter.sendMail(
+    //           {
+    //             from: 'Coder-Backend',
+    //             to: '',
+    //             subject: `Nuevo pedido de ${docs[0].nombre} - ${user}`,
+    //             html: `El usuario ${docs[0].nombre} de correo ${user} solicito: ${docs[0].carrito}`
+    //           }
+    //         )
+    //       } catch (error) {
+    //         console.log(err)
+    //       }
+    //       try {
+    //         const message = client.messages.create({
+    //           body: `Nuevo pedido del usuario ${docs[0].nombre} de correo ${user} solicito:  ${docs[0].carrito}`,
+    //           from: '',
+    //           to: ''
+    //         }).done();
+    //       } catch (error) {
+    //         console.log(error)
+    //       }
+    //       try {
+    //         const message = client.messages.create({
+    //           body: `Su pedido fue recibido y esta en proceso`,
+    //           from: '',
+    //           to: ''
+    //         }).done();
+    //       } catch (error) {
+    //         console.log(error)
+    //       }
+    //     }
+    //   })
     })
-    socket.on('new-product', (producto) => {
-      knex('productos')
-        .insert(producto)
-        .then(() => {
-          console.log("producto agregado")
-        })
-        .catch((err) => {
+
+    socket.on('rendercarro', (user) => {
+      let usuario = modelUser.find({ username: user }, function (err, docs) {
+        if (err) {
           console.log(err)
-        })
-      knex
-        .from('productos')
-        .select('*')
-        .then((productos) => {
-          io.sockets.emit('product', productos)
-        })
-        .catch((err) => {
-          console.log(err)
-        })
+        } else {
+          socket.emit('renderCarro', { carrito: docs[0].carrito, user: user })
+        }
+      })
     })
+
+    socket.on('deleteProduct', (data) => {
+      let usuario = modelUser.find({ username: data.user }, function (err, docs) {
+        if (err) {
+          console.log(err)
+        } else {
+          let carro = docs[0].carrito
+          let indice = carro.indexOf(data.producto)
+          carro.splice(indice, 1)
+          async function Product() {
+            let Productos = await modelUser.updateOne({ username: data.user }, {
+              $set: { carrito: carro }
+            })
+          }
+          Product()
+          socket.emit('renderCarro', { carrito: carro, user: data.user })
+        }
+      })
+    })
+
+    socket.on('AddCarro', (objeto) => {
+      let usuario = modelUser.find({ username: objeto.username }, function (err, docs) {
+        if (err) {
+          console.log(err)
+        } else {
+          let carro = docs[0].carrito
+          carro.push(objeto.producto)
+          async function Product() {
+            let Productos = await modelUser.updateOne({ username: objeto.username }, {
+              $set: { carrito: carro }
+            })
+          }
+          Product()
+          socket.emit('renderCarro', { carrito: carro, user: objeto.username })
+        }
+      })
+    })
+
+    //   async function mensaje() {
+    //     let Post = await modelPost.find()
+    //     socket.emit('messages', Post)
+    //   }
+    //   mensaje()
+
+    //   knex
+    //     .from('productos')
+    //     .select('*')
+    //     .then((productos) => {
+    //       socket.emit('product', productos)
+    //     })
+    //     .catch((err) => {
+    //       console.log(err)
+    //     })
+
+    //   socket.on('new-message', (post) => {
+    //     post.fecha = moment().format('(DD/MM/YYYY hh:mm:ss a)')
+    //     const author = new normalizr.schema.Entity('author')
+    //     const comment = new normalizr.schema.Entity('comment')
+    //     const fecha = new normalizr.schema.Entity('fecha')
+    //     const organigrama = new normalizr.schema.Entity('organigrama', [{
+    //       author: author,
+    //       text: comment,
+    //       fecha: fecha
+    //     }], { idAttribute: 'id' })
+    //     const autores = new normalizr.schema.Array(organigrama)
+
+    //     const normalizado = normalizr.normalize(post, autores)
+
+    //     async function send() {
+    //       await new modelPost(normalizado).save()
+    //       let Post = await modelPost.find()
+    //       console.log(Post)
+    //       io.sockets.emit('messages', Post)
+    //     }
+    //     send()
+    //   })
+    //   socket.on('new-product', (producto) => {
+    //     knex('productos')
+    //       .insert(producto)
+    //       .then(() => {
+    //         console.log("producto agregado")
+    //       })
+    //       .catch((err) => {
+    //         console.log(err)
+    //       })
+    //     knex
+    //       .from('productos')
+    //       .select('*')
+    //       .then((productos) => {
+    //         io.sockets.emit('product', productos)
+    //       })
+    //       .catch((err) => {
+    //         console.log(err)
+    //       })
+    //   })
+    // })
   })
 }
-
