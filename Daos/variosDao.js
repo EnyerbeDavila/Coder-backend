@@ -1,32 +1,13 @@
+const { faker } = require('@faker-js/faker')
+faker.locale = 'es'
+
 const optionsMini = { default: { puerto: '8080', modo: 'FORK' } }
 const parseArgs = require('minimist')
 const args = parseArgs(process.argv, optionsMini)
-const { fork } = require('child_process')
-const { faker } = require('@faker-js/faker')
-faker.locale = 'es'
+
 const os = require('os')
 
-
 module.exports = {
-    RenderFallo: (res) => {
-        res.render('login-error.ejs')
-    },
-    RenderFallo2: (res) => {
-        res.render('Regis-error.ejs')
-    },
-    login: (req, res) => {
-        req.logOut()
-        res.render('formularioLog.ejs')
-    },
-    RenderRegis: (res) => {
-        res.render('formularioRegist.ejs')
-    },
-    RenderLogout: (req, res, nombre) => {
-        res.render('Bye.ejs', { user: nombre })
-    },
-    RenderPrinc: (req, res, nombre, foto) => {
-        res.render('index.ejs', { nombre: nombre, foto: foto })
-    },
     SendInfo: (res) => {
         let objeto = {
             ArgumentosDeEntrada: args,
