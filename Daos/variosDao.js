@@ -8,7 +8,8 @@ const args = parseArgs(process.argv, optionsMini)
 const os = require('os')
 
 module.exports = {
-    SendInfo: (res) => {
+    SendInfo: (req, res) => {
+        // logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
         let objeto = {
             ArgumentosDeEntrada: args,
             PuertoDeEscucha: process.env.PORT,
@@ -53,7 +54,8 @@ module.exports = {
         }
         res.send(objNumeros)
     },
-    ProductosTest: (res) => {
+    ProductosTest: (req, res) => {
+        // logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
         let productos = []
         for (let i = 0; i < 5; i++) {
             let producto = {}
