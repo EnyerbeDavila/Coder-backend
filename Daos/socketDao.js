@@ -1,62 +1,24 @@
-const mongoose = require("mongoose")
-const modelUser = require('../models/schemaUser')
-
-async function CRUD() {
-    try {
-        let rta = await mongoose.connect('mongodb+srv://user3:Asd.123@cluster0.qku2u.mongodb.net/mydata?retryWrites=true&w=majority', {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        })
-    } catch (e) {
-        console.log(e)
-    }
-}
-CRUD()
+const { findById, UpdateCar } = require('../Persistencia/Pesistencia')
 
 module.exports = {
-    EliminarProducto: (data, socket) => {
-        let usuario = modelUser.find({ username: data.user }, function (err, docs) {
-            if (err) {
-                console.log(err)
-            } else {
-                let carro = docs[0].carrito
-                let indice = carro.indexOf(data.producto)
-                carro.splice(indice, 1)
-                async function Product() {
-                    let Productos = await modelUser.updateOne({ username: data.user }, {
-                        $set: { carrito: carro }
-                    })
-                }
-                Product()
-                socket.emit('renderCarro', { carrito: carro, user: data.user })
-            }
-        })
+    EliminarProducto: async (data, socket) => {
+        let usuario = await findById(data.user)
+        let carro = usuario.carrito
+        let indice = carro.indexOf(data.producto)
+        carro.splice(indice, 1)
+        await UpdateCar(data.user, carro)
+        socket.emit('renderCarro', { carrito: carro, user: data.user })
     },
-    RederCarro: (user, socket) => {
-        let usuario = modelUser.find({ username: user }, function (err, docs) {
-            if (err) {
-                console.log(err)
-            } else {
-                socket.emit('renderCarro', { carrito: docs[0].carrito, user: user })
-            }
-        })
+    RederCarro: async (user, socket) => {
+        let usuario = await findById(user)
+        socket.emit('renderCarro', { carrito: usuario.carrito, user: user })
     },
-    AddCar: (objeto, socket) => {
-        let usuario = modelUser.find({ username: objeto.username }, function (err, docs) {
-            if (err) {
-                console.log(err)
-            } else {
-                let carro = docs[0].carrito
-                carro.push(objeto.producto)
-                async function Product() {
-                    let Productos = await modelUser.updateOne({ username: objeto.username }, {
-                        $set: { carrito: carro }
-                    })
-                }
-                Product()
-                socket.emit('renderCarro', { carrito: carro, user: objeto.username })
-            }
-        })
+    AddCar: async (objeto, socket) => {
+        let usuario = await findById(objeto.username)
+        let carro = usuario.carrito
+        carro.push(objeto.producto)
+        await UpdateCar(objeto.username, carro)
+        socket.emit('renderCarro', { carrito: carro, user: objeto.username })
     },
     BuyCar: (user) => {
         // let usuario = modelUser.find({ username: user }, function (err, docs) {

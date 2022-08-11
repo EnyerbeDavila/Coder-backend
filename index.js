@@ -15,7 +15,7 @@ const routerPrinc = require('./router/routerPrinc')
 const optionsMini = { default: { puerto: '8080', modo: 'FORK' } }
 const args = parseArgs(process.argv, optionsMini)
 const modo = args.modo
-const PORT = process.env.port || args.puerto
+const PORT = process.env.PORT || args.puerto
 
 if (modo == 'CLUSTER' && cluster.isPrimary) {
   const cantNucleos = os.cpus().length

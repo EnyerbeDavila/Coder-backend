@@ -1,7 +1,7 @@
 const express = require('express')
 const router = new express.Router()
-const { RenderFallo, RenderFallo2, RenderLogout, RenderPrinc, RenderRegis, login, RenderProducts, RenderInfo, passport } = require('../../Daos/userDao')
-
+const { RenderFallo, RenderFallo2, RenderLogout, RenderPrinc, RenderRegis, login, RenderProducts, RenderInfo} = require('../../Daos/userDao')
+const { passport } = require('../../Persistencia/Pesistencia')
 
 router.use(passport.initialize())
 router.use(passport.session())
