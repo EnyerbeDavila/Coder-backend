@@ -1,24 +1,19 @@
-const { findById } = require('../Persistencia/Pesistencia')
+const { findById, findOrdenes, findOrdenesByUser, findChatByUser } = require('../Persistencia/Pesistencia')
 
 module.exports = {
     RenderFallo: (req, res) => {
-        // logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
         res.render('login-error.ejs')
     },
     RenderFallo2: (req, res) => {
-        // logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
         res.render('Regis-error.ejs')
     },
     login: (req, res) => {
-        // logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
         res.render('formularioLog.ejs')
     },
     RenderRegis: (req, res) => {
-        // logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
         res.render('formularioRegist.ejs')
     },
     RenderLogout: async (req, res) => {
-        // logInfo.info(`Peticion en la ruta: ${req.path}, a traves del Metodo: ${req.method}`)
         let user = req.user.username
         let usuario = await findById(user)
         req.logOut((err) => {
@@ -29,20 +24,37 @@ module.exports = {
             }
         })
     },
-    RenderPrinc: async (req, res) => {
+    renderChat: async (req, res) => {
         let user = req.user.username
-        let usuario = await findById(user)
-        res.render('index.ejs', { nombre: usuario.nombre, foto: usuario.urlAvatar })
+        res.render('chat.ejs', {user: user})
+    }, 
+    getMessages: async (req, res) => {
+        let user = req.user.username
+        let messages = await findChatByUser(user)
+        res.send(messages)
     },
-    RenderProducts: async (req, res) => {
+    renderChatAdmin: async (req, res) => {
         let user = req.user.username
         let usuario = await findById(user)
-        res.render('productos.ejs', { username: usuario.username, nombre: usuario.nombre, foto: usuario.urlAvatar })
-
+        if (usuario.admin == true) {
+            res.render('chatAdmin.ejs')
+        } else {
+            res.send('Usted no tinene los Permisos necesarios')
+        }
     },
-    RenderInfo: async (req, res) => {
+    getOrdenes: async (req, res) => {
         let user = req.user.username
         let usuario = await findById(user)
-        res.render('info-usuario.ejs', { username: usuario.username, nombre: usuario.nombre, telefono: usuario.NuTelefonico, foto: usuario.urlAvatar, edad: usuario.edad, correo: usuario.username })
+        if (usuario.admin == true) {
+            let ordenes = await findOrdenes()
+            res.send(ordenes)
+        } else {
+            res.send('Usted no tinene los Permisos necesarios')
+        }
+    },
+    getOrden: async (req, res) => {
+        let user = req.user.username
+        let ordenes = await findOrdenesByUser(user)
+        res.send(ordenes)
     }
 }

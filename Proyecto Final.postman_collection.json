@@ -1,0 +1,262 @@
+{
+	"info": {
+		"_postman_id": "d0a05018-839c-4977-96b4-e68fdc02db2b",
+		"name": "Proyecto Final",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19972367"
+	},
+	"item": [
+		{
+			"name": "Get-Log",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post-Log",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "",
+							"value": "",
+							"description": "username",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "",
+							"value": "",
+							"description": "password",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/?username=&password=",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						""
+					],
+					"query": [
+						{
+							"key": "username",
+							"value": ""
+						},
+						{
+							"key": "password",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Log-Out",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/log-out",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"log-out"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetProductos",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/Productos",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"Productos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetById",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/Productos/id/63055bcd7d53a67adad5b4f888",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"Productos",
+						"id",
+						"63055bcd7d53a67adad5b4f888"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetByCategoria",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/Productos/categoria/joyeriaaa",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"Productos",
+						"categoria",
+						"joyeriaaa"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetCarrito",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/carrito",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"carrito"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AddProductCar",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/carrito/6305638d44f050e0c1ddabbd",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"carrito",
+						"6305638d44f050e0c1ddabbd"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteProductCar",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/carrito/63055bcd7d53a67adad5b4f8",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"carrito",
+						"63055bcd7d53a67adad5b4f8"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "NewOrden",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/carrito/comprar",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"carrito",
+						"comprar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetOrdenes",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/ordenes",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"ordenes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetOrdenUser",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/orden",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"orden"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
