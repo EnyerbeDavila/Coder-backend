@@ -1,6 +1,6 @@
 const express = require('express')
 const router = new express.Router()
-const { RenderFallo, RenderFallo2, RenderLogout, RenderRegis, login, getOrdenes, getOrden, renderChat, renderChatAdmin, getMessages } = require('../Daos/UserDao')
+const { RenderFallo, RenderFallo2, RenderLogout, RenderRegis, login, getOrdenes, getOrden, renderChat, renderChatAdmin, getMessages } = require('../../Daos/userDao')
 const { passport } = require('../../Persistencia/Pesistencia')
 
 router.use(passport.initialize())

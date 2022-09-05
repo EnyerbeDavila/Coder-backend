@@ -6,7 +6,7 @@ const session = require('express-session')
 const parseArgs = require('minimist')
 const Env = require('./env')
 const routerPrinc = require('./router/routerPrinc')
-const { addMessage, RenderChat, RenderChatAdm } = require('./Daos/socketdao')
+const { addMessage, RenderChat, RenderChatAdm } = require('./Daos/socketDao')
 
 const optionsMini = { default: { puerto: '8080' } }
 const args = parseArgs(process.argv, optionsMini)
