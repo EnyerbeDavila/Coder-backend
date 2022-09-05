@@ -4,7 +4,7 @@ const { Server: IOServer } = require('socket.io')
 const connectMongo = require('connect-mongo')
 const session = require('express-session')
 const parseArgs = require('minimist')
-const { addMessage, RenderChat, RenderChatAdm } = require('../daos/socketdao')
+const { addMessage, RenderChat, RenderChatAdm } = require('./Daos/socketdao')
 const Env = require('./env')
 const routerPrinc = require('./router/routerPrinc')
 

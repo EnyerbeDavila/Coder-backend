@@ -1,6 +1,6 @@
 const express = require('express')
 const router = new express.Router()
-const { getCarrito, addProdCarrito, deleteProdCarrito, compraCarrito} = require('../../daos/CarritoDao')
+const { getCarrito, addProdCarrito, deleteProdCarrito, compraCarrito} = require('../../Daos/CarritoDao')
 
 router.get('/', (req, res, next) => {
     if (req.user == undefined) {
