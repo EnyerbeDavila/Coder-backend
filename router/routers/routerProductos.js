@@ -1,6 +1,6 @@
 const express = require('express')
 const router = new express.Router()
-const { getProductos, getProductosByCategoria, getProductosById } = require('../../Daos/ProductosDao')
+const { getProductos, getProductosByCategoria, getProductosById } = require('../../daos/ProductosDao')
 
 router.get('/', (req, res, next) => {
     if (req.user == undefined) {
